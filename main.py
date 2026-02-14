@@ -78,6 +78,20 @@ class ImageProcessor():
         pixmapimage = pixmapimage.scaled(w, h, Qt.KeepAspectRatio)
         lb_image.setPixmap(pixmapimage)
         lb_image.show()
+    def saveImage(self):
+        path = os.path.join(self.dir, self.save_dir)
+        if not (os.path.exists(path) or os.path.isdir(path)):
+            os.mkdir(path)
+        image_path = os.path.join(path, self.filename)
+        self.image.save(image_path)
+    def saveAndShowImage(self):
+        self.saveImage()
+        image_path = os.path.join(self.dir, self.save_dir, self.filename)
+        self.showImage(image_path)
+    def toGrayscale(self):
+        self.image = self.image.convert("L")
+        self.saveAndShowImage()
+
 
 workimage = ImageProcessor()
 def showChosenImage():
@@ -90,7 +104,7 @@ def showChosenImage():
 lw_files.currentRowChanged.connect(showChosenImage)
 
 btn_dir.clicked.connect(showFileNamesList)
-
+btn_bw.clicked.connect(workimage.toGrayscale)
 
 
 
