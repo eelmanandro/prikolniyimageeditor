@@ -5,79 +5,84 @@ from PyQt5.QtGui import QPixmap
 import os
 from PIL import Image, ImageFilter
 app = QApplication([])
-win = QWidget()
-win.resize(700, 500)
-win.setWindowTitle('prikolniyimageeditor')
 
-lb_image = QLabel('Картинка')
-btn_dir = QPushButton('Папка')
-lw_files = QListWidget()
-btn_left = QPushButton('Вліво')
-btn_right = QPushButton('Вправо')
-btn_flip = QPushButton('Дзеркало')
-btn_sharp = QPushButton('Різкість')
-btn_bw = QPushButton('Ч/Б')
 
-row = QHBoxLayout()
-col1 = QVBoxLayout()
-col2 = QVBoxLayout()
-col1.addWidget(btn_dir)
-col1.addWidget(lw_files)
-col2.addWidget(lb_image, 95)
-row_tools = QHBoxLayout()
-row_tools.addWidget(btn_left)
-row_tools.addWidget(btn_right)
-row_tools.addWidget(btn_flip)
-row_tools.addWidget(btn_sharp)
-row_tools.addWidget(btn_bw)
-col2.addLayout(row_tools)
-row.addLayout(col1, 20)
-row.addLayout(col2, 80)
-win.setLayout(row)
+class MainWindow(QMainWindow):
+    def __init__(self):
+        super().__init__( )
+        self.resize(700, 500)
+        self.setWindowTitle('prikolniyimageeditor')
+        self.work_dir = ""
+        self.setupUi()
+    def setupUi(self):
+        self.lb_image = QLabel('Картинка')
+        self.btn_dir = QPushButton('Папка')
+        self.lw_files = QListWidget()
+        self.btn_left = QPushButton('Вліво')
+        self.btn_right = QPushButton('Вправо')
+        self.btn_flip = QPushButton('Дзеркало')
+        self.btn_sharp = QPushButton('Різкість')
+        self.btn_bw = QPushButton('Ч/Б')
 
-workDir = ''
-def chooseWorkdir():
-    global workDir
-    dir = QFileDialog.getExistingDirectory()
-    if dir:
-        workDir = dir
+        self.row = QHBoxLayout()
+        self.col1 = QVBoxLayout()
+        self.col2 = QVBoxLayout()
+        self.col1.addWidget(self.btn_dir)
+        self.col1.addWidget(self.lw_files)
+        self.col2.addWidget(self.lb_image, 95)
+        self.row_tools = QHBoxLayout()
+        self.row_tools.addWidget(self.btn_left)
+        self.row_tools.addWidget(self.btn_right)
+        self.row_tools.addWidget(self.btn_flip)
+        self.row_tools.addWidget(self.btn_sharp)
+        self.row_tools.addWidget(self.btn_bw)
+        self.col2.addLayout(self.row_tools)
+        self.row.addLayout(self.col2, 80)
+        self.row.addLayout(self.col1, 20)
+        self.setLayout(self.row)
 
-def filter(files: list, extensions: list)-> list:
-    result = []
-    for filename in files:
-        for ext in extensions:
-            if filename.endswith(ext):
-                result.append(filename)
-    return result
+    def chooseWorkdir(self):
+        dir = QFileDialog.getExistingDirectory()
+        if dir:
+            self.work_dir = dir
 
-def showFileNamesList():
-    extensions = [ '.jpg', '.jpeg', '.png', '.bmp', '.gif', '.svg' ]
-    chooseWorkdir()
-    if workDir:
+    def filter(self, files: list, extensions: list)-> list:
+        result = []
+        for filename in files:
+            for ext in extensions:
+                if filename.endswith(ext):
+                    result.append(filename)
+        return result
 
-        filenames = filter(os.listdir(workDir), extensions)
-        lw_files.clear()
-        for filename in filenames:
-            lw_files.addItem(filename)
+    def showFileNamesList(self):
+        extensions = [ '.jpg', '.jpeg', '.png', '.bmp', '.gif', '.svg' ]
+        self.chooseWorkdir()
+        if self.work_dir:
+
+            filenames = filter(os.listdir(self.work_dir), extensions)
+            self.lw_files.clear()
+            for filename in filenames:
+                self.lw_files.addItem(filename)
 
 class ImageProcessor():
-    def __init__ (self):
+    def __init__ (self, window: MainWindow):
         self.image = None
         self.filename = None
         self.dir = None
         self.save_dir = 'Modified/'
+        self.window = window
     def loadImage(self, dir, filename):
         self.dir = dir
         self.filename = filename
         image_path = os.path.join(dir, filename)
         self.image = Image.open(image_path)
     def showImage(self, path):
-        lb_image.hide()
+        self.window.lb_image.hide()
         pixmapimage = QPixmap(path)
-        w, h = lb_image.width(), lb_image.height()
+        w, h = self.window.lb_image.width(), self.window.lb_image.height()
         pixmapimage = pixmapimage.scaled(w, h, Qt.KeepAspectRatio)
-        lb_image.setPixmap(pixmapimage)
-        lb_image.show()
+        self.window.lb_image.setPixmap(pixmapimage)
+        self.window.lb_image.show()
     def saveImage(self):
         path = os.path.join(self.dir, self.save_dir)
         if not (os.path.exists(path) or os.path.isdir(path)):
@@ -92,19 +97,19 @@ class ImageProcessor():
         self.image = self.image.convert("L")
         self.saveAndShowImage()
 
-
-workimage = ImageProcessor()
+win = MainWindow()
+workimage = ImageProcessor(win)
 def showChosenImage():
-    if lw_files.currentRow() >= 0:
-        filename = lw_files.currentItem().text()
-        workimage.loadImage(workDir, filename)
-        image_path = os.path.join(workDir, filename)
+    if win.lw_files.currentRow() >= 0:
+        filename = win.lw_files.currentItem().text()
+        workimage.loadImage(win.work_dir, filename)
+        image_path = os.path.join(win.work_dir, filename)
         workimage.showImage(image_path)
 
-lw_files.currentRowChanged.connect(showChosenImage)
+win.lw_files.currentRowChanged.connect(showChosenImage)
 
-btn_dir.clicked.connect(showFileNamesList)
-btn_bw.clicked.connect(workimage.toGrayscale)
+win.btn_dir.clicked.connect(win.showFileNamesList)
+win.btn_bw.clicked.connect(workimage.toGrayscale)
 
 
 
