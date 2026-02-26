@@ -37,17 +37,20 @@ class ImageProcessor():
 
 class MainWindow(QMainWindow):
     def __init__(self, workimage: ImageProcessor):
-        super().__init__( )
+        super().__init__()
         self.resize(700, 500)
         self.setWindowTitle('prikolniyimageeditor')
         self.work_dir = ""
         self.current_image_path = ""
         self.workimage = workimage
+        self._last_shown_image_path = None
         self.setupUi()
         self.setupWindowEvents()
     
     def setupUi(self):
         self.lb_image = QLabel('Картинка')
+        # Встановлення мінімального розміру, щоб уникнути проблеми зі зменшенням зображення
+        self.lb_image.setMinimumSize(1, 1)
         self.btn_dir = QPushButton('Папка')
         self.lw_files = QListWidget()
         self.btn_left = QPushButton('Вліво')
@@ -101,18 +104,26 @@ class MainWindow(QMainWindow):
 
             filenames = self.filter_files(os.listdir(self.work_dir), extensions)
             self.lw_files.clear()
-            print(filenames)
             for filename in filenames:
                 self.lw_files.addItem(filename)
 
 
     def showImage(self, path):
+        self._last_shown_image_path = path
         self.lb_image.hide()
         pixmapimage = QPixmap(path)
         w, h = self.lb_image.width(), self.lb_image.height()
-        pixmapimage = pixmapimage.scaled(w, h, Qt.KeepAspectRatio)
+        if w == 0 or h == 0:
+            w, h = 700, 500
+        pixmapimage = pixmapimage.scaled(w, h, Qt.KeepAspectRatio, Qt.SmoothTransformation)
         self.lb_image.setPixmap(pixmapimage)
         self.lb_image.show()
+
+    def resizeEvent(self, event):
+        """Обробка події зміни розміру вікна"""
+        super().resizeEvent(event)
+        if self._last_shown_image_path:
+            self.showImage(self._last_shown_image_path)
 
     def showChosenImage(self):
         if self.lw_files.currentRow() >= 0:
