@@ -33,6 +33,26 @@ class ImageProcessor():
         self.image = self.image.convert("L")
         image_path = self.saveImage()
         return image_path
+    
+    def rotateLeft(self):
+        self.image = self.image.rotate(90, expand = True)
+        image_path = self.saveImage()
+        return image_path
+    
+    def rotateRight(self):
+        self.image = self.image.rotate(-90, expand = True)
+        image_path = self.saveImage()
+        return image_path
+    
+    def flipImage(self):
+        self.image = self.image.transpose(Image.FLIP_LEFT_RIGHT)
+        image_path = self.saveImage()
+        return image_path
+    
+    def sharpenImage(self):
+        self.image = self.image.filter(ImageFilter.SHARPEN)
+        image_path = self.saveImage()
+        return image_path
 
 
 class MainWindow(QMainWindow):
@@ -83,6 +103,11 @@ class MainWindow(QMainWindow):
 
         self.btn_dir.clicked.connect(self.showFileNamesList)
         self.btn_bw.clicked.connect(self.toGrayscaleImage)
+
+        self.btn_right.clicked.connect(self.rotateRightImage)
+        self.btn_left.clicked.connect(self.rotateLeftImage)
+        self.btn_flip.clicked.connect(self.flipImage)
+        self.btn_sharp.clicked.connect(self.sharpenImage)
 
     def chooseWorkdir(self):
         dir = QFileDialog.getExistingDirectory()
@@ -135,6 +160,23 @@ class MainWindow(QMainWindow):
     def toGrayscaleImage(self):
         self.current_image_path = workimage.toGrayscale()
         self.showImage(self.current_image_path)
+    
+    def rotateLeftImage(self):
+        self.current_image_path = workimage.rotateLeft()
+        self.showImage(self.current_image_path)
+
+    def rotateRightImage(self):
+        self.current_image_path = workimage.rotateRight()
+        self.showImage(self.current_image_path)
+
+    def flipImage(self):
+        self.current_image_path = workimage.flipImage()
+        self.showImage(self.current_image_path)
+
+    def sharpenImage(self):
+        self.current_image_path = workimage.sharpenImage()
+        self.showImage(self.current_image_path)
+
 
 
 if __name__ == "__main__":
