@@ -9,3 +9,5 @@ venv/
 .vs*
 
 Modified/
+build/
+dist/
