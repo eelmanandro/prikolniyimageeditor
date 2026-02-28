@@ -1,8 +1,9 @@
+import sys
+import os
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QPushButton, QVBoxLayout,
                               QHBoxLayout, QWidget, QListWidget, QLabel, QFileDialog)
-from PyQt5.QtGui import QPixmap
-import os
+from PyQt5.QtGui import QPixmap, QIcon
 from PIL import Image, ImageFilter
 app = QApplication([])
 
@@ -64,6 +65,15 @@ class MainWindow(QMainWindow):
         self.current_image_path = ""
         self.workimage = workimage
         self._last_shown_image_path = None
+
+        if hasattr(sys, '_MEIPASS'):
+            base_path = sys._MEIPASS
+        else:
+            base_path = os.path.abspath(".")
+
+        icon_path = os.path.join(base_path, "assets", "logo.png")
+        self.setWindowIcon(QIcon(icon_path))
+
         self.setupUi()
         self.setupWindowEvents()
     

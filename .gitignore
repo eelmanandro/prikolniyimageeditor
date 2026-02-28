@@ -8,4 +8,6 @@ venv/
 .github/
 .vs*
 
-modified/
+Modified/
+build/
+dist/
